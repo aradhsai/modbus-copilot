@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tag copilot — setup</title>
+<title>Modbus copilot — setup</title>
 <style>
   :root{--ink:#121218;--body:#44454c;--muted:#61646b;--faint:#94979e;--line:#e0e2e6;--surface:#f7f7f8;--ok:#4d9e0c;--warn:#b4530a;--bad:#c0392b;--blue:#2f6fb5}
   *{box-sizing:border-box}
@@ -36,7 +36,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Tag copilot</h1>
+  <h1>Modbus copilot</h1>
   <p class="sub">Point at a device, load its tag database, check it is real, then hand it to an assistant.</p>
 
   <div class="card">
@@ -74,13 +74,13 @@
 
   <div class="card">
     <div class="step">4 — connect an assistant</div>
-    <p style="margin:0 0 8px;color:var(--muted);font-size:14px">Adds <code>tag-copilot</code> to Claude Desktop's config. Your other MCP servers are kept, and the file is backed up first.</p>
+    <p style="margin:0 0 8px;color:var(--muted);font-size:14px">Adds <code>modbus-copilot</code> to Claude Desktop's config. Your other MCP servers are kept, and the file is backed up first.</p>
     <button id="btnClaude">Add to Claude Desktop</button>
     <button id="btnCopy" class="ghost">Copy config instead</button>
     <div id="claudeOut" class="out hide"></div>
     <div class="out" id="mcp" style="margin-top:12px">{
   "mcpServers": {
-    "tag-copilot": { "url": "http://127.0.0.1:1880/mcp" }
+    "modbus-copilot": { "url": "http://127.0.0.1:1880/mcp" }
   }
 }</div>
     <div class="hint">Read-only by construction: the server exposes no write tool, so an assistant can reason about the plant but never change it.</div>
@@ -138,7 +138,7 @@ $('btnClaude').onclick = async () => {
     body: JSON.stringify({ url: 'http://127.0.0.1:1880/mcp' })
   }).then(r=>r.json());
   if (r.error) return show($('claudeOut'), '✗ ' + r.error, 'bad');
-  let out = `✓ ${r.replaced ? 'updated' : 'added'} tag-copilot → ${r.url}\n${r.file}`;
+  let out = `✓ ${r.replaced ? 'updated' : 'added'} modbus-copilot → ${r.url}\n${r.file}`;
   if (r.others.length) out += `\nkept alongside: ${r.others.join(', ')}`;
   if (r.backup) out += `\nbackup: ${r.backup.split('/').pop()}`;
   out += `\n\nRestart Claude Desktop to pick it up.`;

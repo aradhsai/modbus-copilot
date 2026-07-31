@@ -27,7 +27,7 @@
  */
 const path = require('path');
 const ModbusRTU = require('modbus-serial');
-const store = require(path.join(__dirname, '..', 'nodered', 'nodes', 'tag-copilot', 'store.js'));
+const store = require(path.join(__dirname, '..', 'nodered', 'nodes', 'modbus-copilot', 'store.js'));
 
 const pad = (s, n) => String(s).padEnd(n);
 const lpad = (s, n) => String(s).padStart(n);

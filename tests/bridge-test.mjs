@@ -17,9 +17,9 @@ const configPath = process.platform === 'darwin'
     ? join(homedir(), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json')
     : join(homedir(), '.config', 'Claude', 'claude_desktop_config.json');
 
-const entry = JSON.parse(readFileSync(configPath, 'utf8'))?.mcpServers?.['tag-copilot'];
+const entry = JSON.parse(readFileSync(configPath, 'utf8'))?.mcpServers?.['modbus-copilot'];
 if (!entry) {
-    console.error('tag-copilot is not in Claude’s config — run the wizard’s "Add to Claude Desktop" first');
+    console.error('modbus-copilot is not in Claude’s config — run the wizard’s "Add to Claude Desktop" first');
     process.exit(1);
 }
 if (!entry.command) {

@@ -127,14 +127,14 @@ module.exports = function (RED) {
         // Read from the environment, never from the flow file. A token committed
         // into flows.json would be shared the moment anyone exports or version-
         // controls their flows, which is exactly what this project encourages.
-        const token = (process.env.TAG_COPILOT_TOKEN || '').trim();
+        const token = (process.env.MODBUS_COPILOT_TOKEN || '').trim();
 
         // Bound to localhost, no token is a reasonable default — nothing off the
         // machine can reach it. Exposed through a tunnel it is not, so the wizard
         // refuses to start a tunnel without one and this warns loudly either way.
         if (!token) {
             node.warn(
-                'tag-mcp: no TAG_COPILOT_TOKEN set — this endpoint is unauthenticated. ' +
+                'tag-mcp: no MODBUS_COPILOT_TOKEN set — this endpoint is unauthenticated. ' +
                 'Safe while it is only reachable from this machine; set a token before exposing it.'
             );
         }
@@ -162,7 +162,7 @@ module.exports = function (RED) {
                 const { z } = await import('zod');
 
                 const server = new McpServer(
-                    { name: 'tag-copilot', version: '0.1.0' },
+                    { name: 'modbus-copilot', version: '0.1.0' },
                     {
                         instructions:
                             'Read-only access to live industrial tag values acquired by Node-RED. ' +
@@ -213,7 +213,7 @@ module.exports = function (RED) {
                     if (!tokenOk(req.headers.authorization)) {
                         // WWW-Authenticate so a client can tell "I need credentials"
                         // from "this endpoint is broken".
-                        res.set('WWW-Authenticate', 'Bearer realm="tag-copilot"');
+                        res.set('WWW-Authenticate', 'Bearer realm="modbus-copilot"');
                         return res.status(401).json({ error: 'missing or invalid bearer token' });
                     }
                     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
@@ -253,14 +253,14 @@ module.exports = function (RED) {
                         // to anyone with the URL, which is most of what an attacker
                         // would want to know first.
                         if (!tokenOk(req.headers.authorization)) {
-                            res.set('WWW-Authenticate', 'Bearer realm="tag-copilot"');
+                            res.set('WWW-Authenticate', 'Bearer realm="modbus-copilot"');
                             return res.status(401).json({
-                                server: 'tag-copilot', authenticated: false,
+                                server: 'modbus-copilot', authenticated: false,
                                 error: 'bearer token required',
                             });
                         }
                         res.json({
-                            server: 'tag-copilot', transport: 'streamable-http', method: 'POST',
+                            server: 'modbus-copilot', transport: 'streamable-http', method: 'POST',
                             authenticated: Boolean(token),
                             devices: store.listDevices(),
                             writable: false,
@@ -276,7 +276,7 @@ module.exports = function (RED) {
                 }
 
                 node.status({ fill: 'green', shape: 'dot', text: `MCP on ${route}` });
-                node.log(`tag-copilot MCP endpoint ready at ${route}`);
+                node.log(`modbus-copilot MCP endpoint ready at ${route}`);
             } catch (err) {
                 node.status({ fill: 'red', shape: 'dot', text: 'mcp failed' });
                 node.error(`tag-mcp: ${err.message}`);

@@ -6,6 +6,6 @@ COPY package.json ./
 RUN npm install --no-audit --no-fund express@4 js-yaml@4 modbus-serial@8
 COPY lib ./lib
 COPY wizard ./wizard
-COPY nodered/nodes/tag-copilot ./nodered/nodes/tag-copilot
+COPY nodered/nodes/modbus-copilot ./nodered/nodes/modbus-copilot
 EXPOSE 3000
 CMD ["node", "wizard/server.js"]

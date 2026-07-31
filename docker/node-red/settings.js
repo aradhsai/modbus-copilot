@@ -2,7 +2,7 @@
  * Node-RED settings for the container.
  *
  * Differs from the local one in two ways: userDir is /data (the image's
- * convention), and the tag-copilot nodes arrive as an installed npm package
+ * convention), and the modbus-copilot nodes arrive as an installed npm package
  * rather than through nodesDir.
  */
 module.exports = {

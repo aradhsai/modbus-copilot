@@ -124,7 +124,7 @@ app.get('/api/claude-status', (_req, res) => {
     let installed = false;
     if (exists) {
         try {
-            installed = Boolean(JSON.parse(fs.readFileSync(file, 'utf8'))?.mcpServers?.['tag-copilot']);
+            installed = Boolean(JSON.parse(fs.readFileSync(file, 'utf8'))?.mcpServers?.['modbus-copilot']);
         } catch { /* unreadable config is reported as not installed */ }
     }
     res.json({ file, exists, installed, platform: process.platform });
@@ -159,22 +159,22 @@ app.post('/api/add-to-claude', (req, res) => {
         }
 
         config.mcpServers = config.mcpServers || {};
-        const existed = Boolean(config.mcpServers['tag-copilot']);
+        const existed = Boolean(config.mcpServers['modbus-copilot']);
         // Claude Desktop's mcpServers block launches stdio servers — it has no way
         // to start a bare { url }, which simply errors. mcp-remote is the standard
         // bridge: it speaks stdio to Claude and streamable HTTP to us.
         // mcp-remote passes a bearer token through with --header. Without a token
         // the endpoint is unauthenticated, which is fine only while it is bound to
         // localhost — see the warning tag-mcp logs at startup.
-        const token = (process.env.TAG_COPILOT_TOKEN || '').trim();
+        const token = (process.env.MODBUS_COPILOT_TOKEN || '').trim();
         const args = ['-y', 'mcp-remote', url, '--allow-http'];
         if (token) args.push('--header', `Authorization: Bearer ${token}`);
-        config.mcpServers['tag-copilot'] = { command: 'npx', args };
+        config.mcpServers['modbus-copilot'] = { command: 'npx', args };
         fs.writeFileSync(file, JSON.stringify(config, null, 2) + '\n');
 
         res.json({
             ok: true, file, backup, url, replaced: existed,
-            others: Object.keys(config.mcpServers).filter((k) => k !== 'tag-copilot'),
+            others: Object.keys(config.mcpServers).filter((k) => k !== 'modbus-copilot'),
             note: 'Restart Claude Desktop to pick it up.',
         });
     } catch (err) {
@@ -183,7 +183,7 @@ app.post('/api/add-to-claude', (req, res) => {
 });
 
 app.get('/api/auth-status', (_req, res) => {
-    const token = (process.env.TAG_COPILOT_TOKEN || '').trim();
+    const token = (process.env.MODBUS_COPILOT_TOKEN || '').trim();
     res.json({
         authenticated: Boolean(token),
         // Never return the token itself — this endpoint is only as trustworthy as
@@ -209,7 +209,7 @@ app.get('/api/profiles', (_req, res) => {
 const HOST = process.env.WIZARD_HOST || '127.0.0.1';
 
 app.listen(PORT, HOST, () => {
-    console.log(`\n  Tag copilot setup — http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}\n`);
+    console.log(`\n  Modbus copilot setup — http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}\n`);
     console.log(HOST === '0.0.0.0'
         ? '  Listening on all interfaces (container mode). Anyone who can reach this port can deploy flows.\n'
         : '  Bound to localhost only. Nothing leaves this machine.\n');

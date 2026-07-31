@@ -1,4 +1,4 @@
-# tag-copilot — the whole lab in four containers.
+# modbus-copilot — the whole lab in four containers.
 #
 #   pump      a Modbus TCP slave that behaves like a pump VFD
 #   chiller   a second Modbus device, so the lab shows more than one map at once
@@ -10,7 +10,7 @@
 # first run on — and colliding on first start wastes the first five minutes.
 # Override with the *_PORT variables if these clash too.
 
-name: tag-copilot
+name: modbus-copilot
 
 services:
   pump:
@@ -49,7 +49,7 @@ services:
     environment:
       # No token means the endpoint is unauthenticated. Fine on a trusted network;
       # set one before exposing it anywhere.
-      TAG_COPILOT_TOKEN: ${TAG_COPILOT_TOKEN:-}
+      MODBUS_COPILOT_TOKEN: ${MODBUS_COPILOT_TOKEN:-}
     mem_limit: 512m
 
   wizard:
@@ -66,5 +66,5 @@ services:
       # In a container the network namespace is the isolation; binding to localhost
       # here would make the published port unreachable.
       WIZARD_HOST: 0.0.0.0
-      TAG_COPILOT_TOKEN: ${TAG_COPILOT_TOKEN:-}
+      MODBUS_COPILOT_TOKEN: ${MODBUS_COPILOT_TOKEN:-}
     mem_limit: 256m
