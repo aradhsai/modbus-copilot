@@ -1,0 +1,14 @@
+Area,Equipment,Tag,Address,Type,Scale,Units,Description
+Station-1,Pump-01,suction_pressure,40001,UINT16,0.1,bar,Pump suction pressure
+Station-1,Pump-01,discharge_pressure,40002,UINT16,0.1,bar,Pump discharge pressure
+Station-1,Pump-01,motor_current,40003,UINT16,0.01,A,Motor current RMS
+Station-1,Pump-01,speed_setpoint,40011,UINT16,0.1,Hz,Commanded speed
+Station-1,Pump-01,running_hours,40021,UINT32,1,h,Cumulative run time
+Station-1,Pump-01,bearing_temperature,30006,INT16,0.1,degC,Drive-end bearing temperature
+Station-1,Pump-01,run_feedback,10001,BOOL,,,Pump running
+Station-1,Pump-01,fault_active,10002,BOOL,,,Any active fault
+Station-2,Dosing-01,dose_flow,40201,UINT16,0.01,l/s,Dosing pump flow
+Station-2,Dosing-01,dose_setpoint,40202,UINT16,0.01,l/s,Dosing setpoint
+Station-2,Dosing-01,tank_level,40203,UINT16,0.1,%,Chemical tank level
+Station-2,Dosing-01,pump_run,10201,BOOL,,,Dosing pump running
+Station-2,Dosing-01,low_level_alarm,10202,BOOL,,,Tank low level

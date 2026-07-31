@@ -1,0 +1,70 @@
+# tag-copilot — the whole lab in four containers.
+#
+#   pump      a Modbus TCP slave that behaves like a pump VFD
+#   chiller   a second Modbus device, so the lab shows more than one map at once
+#   node-red  polls both, decodes tags against their profiles, serves MCP
+#   wizard    the setup UI: device, tag database, check, connect
+#
+# Ports are off the defaults on purpose: 1880/1881 and 3000/3001 are commonly
+# already taken on a machine that runs other labs — they were on the host this was
+# first run on — and colliding on first start wastes the first five minutes.
+# Override with the *_PORT variables if these clash too.
+
+name: tag-copilot
+
+services:
+  pump:
+    build:
+      context: .
+      dockerfile: docker/sim/Dockerfile
+    container_name: tagcopilot-pump
+    restart: unless-stopped
+    environment:
+      DEVICE: pump
+    ports:
+      - "${PUMP_PORT:-5022}:5020"        # exposed so the validator CLI can reach it from outside
+    mem_limit: 128m
+
+  chiller:
+    build:
+      context: .
+      dockerfile: docker/sim/Dockerfile
+    container_name: tagcopilot-chiller
+    restart: unless-stopped
+    environment:
+      DEVICE: chiller
+    ports:
+      - "${CHILLER_PORT:-5023}:5020"
+    mem_limit: 128m
+
+  node-red:
+    build:
+      context: .
+      dockerfile: docker/node-red/Dockerfile
+    container_name: tagcopilot-nodered
+    restart: unless-stopped
+    depends_on: [pump, chiller]
+    ports:
+      - "${NODERED_PORT:-1882}:1880"        # MCP lives at :1882/mcp
+    environment:
+      # No token means the endpoint is unauthenticated. Fine on a trusted network;
+      # set one before exposing it anywhere.
+      TAG_COPILOT_TOKEN: ${TAG_COPILOT_TOKEN:-}
+    mem_limit: 512m
+
+  wizard:
+    build:
+      context: .
+      dockerfile: docker/wizard/Dockerfile
+    container_name: tagcopilot-wizard
+    restart: unless-stopped
+    depends_on: [node-red]
+    ports:
+      - "${WIZARD_PORT:-3002}:3000"
+    environment:
+      NODERED_URL: http://node-red:1880
+      # In a container the network namespace is the isolation; binding to localhost
+      # here would make the published port unreachable.
+      WIZARD_HOST: 0.0.0.0
+      TAG_COPILOT_TOKEN: ${TAG_COPILOT_TOKEN:-}
+    mem_limit: 256m

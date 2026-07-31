@@ -1,0 +1,8 @@
+{
+  "name": "node-red-contrib-tag-copilot",
+  "version": "0.1.0",
+  "description": "Semantic read-only tag layer over any Node-RED protocol node, served to LLMs over MCP",
+  "license": "Apache-2.0",
+  "node-red": { "nodes": { "tag-copilot": "tag-copilot.js" } },
+  "dependencies": { "js-yaml": "^4.1.0" }
+}

@@ -1,0 +1,22 @@
+node_modules/
+
+# Secrets. The bearer token lives in the environment and must never reach a file
+# that gets committed — the whole point of this project is that profiles and flows
+# are shareable, and a token riding along in one of them would defeat that.
+.env
+*.env
+
+# Node-RED runtime state. userDir is the repo root, so the runtime drops its
+# bookkeeping here. flows_cred.json in particular holds credentials in cleartext
+# or encrypted-with-a-local-key form; neither belongs in a repo.
+.config.*.json
+.config.*.json.backup
+.sessions.json
+flows_cred.json
+.flows.json.backup
+
+# Rendered from templates at run time, holds the substituted password.
+flink/sql/*.rendered.sql
+
+.DS_Store
+._*

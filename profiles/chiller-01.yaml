@@ -1,0 +1,94 @@
+# Chiller — a second device, so the lab shows more than one map at a time.
+# Addresses are zero-based protocol addresses; a manual saying 40001 means 0.
+profile_version: 1
+
+device:
+  name: Chiller-01
+  model: Northwind WC-450
+  description: Water-cooled chiller on the district cooling ring
+  transport: tcp
+  host: chiller
+  port: 5020
+  unit_id: 1
+  byte_order: big
+  word_order: big
+  timeout_seconds: 3
+
+tags:
+  - name: chw_supply_temp
+    description: Chilled water supply temperature
+    path: Plant-Room/Chiller-01
+    kind: holding
+    address: 0
+    type: uint16
+    scale: 0.1
+    unit: degC
+
+  - name: chw_return_temp
+    description: Chilled water return temperature
+    path: Plant-Room/Chiller-01
+    kind: holding
+    address: 1
+    type: uint16
+    scale: 0.1
+    unit: degC
+
+  - name: chw_setpoint
+    description: Supply temperature setpoint
+    path: Plant-Room/Chiller-01
+    kind: holding
+    address: 2
+    type: uint16
+    scale: 0.1
+    unit: degC
+    access: rw
+
+  - name: load_percent
+    description: Compressor load
+    path: Plant-Room/Chiller-01
+    kind: holding
+    address: 3
+    type: uint16
+    scale: 0.1
+    unit: '%'
+
+  - name: compressor_current
+    description: Compressor current
+    path: Plant-Room/Chiller-01
+    kind: holding
+    address: 4
+    type: uint16
+    scale: 0.1
+    unit: A
+
+  - name: running_hours
+    description: Cumulative run time
+    path: Plant-Room/Chiller-01
+    kind: holding
+    address: 20
+    type: uint32
+    scale: 1
+    unit: h
+
+  - name: delta_t
+    description: Return minus supply — the number that gets argued about
+    path: Plant-Room/Chiller-01
+    kind: input
+    address: 0
+    type: int16
+    scale: 0.1
+    unit: degC
+
+  - name: running
+    description: Chiller running
+    path: Plant-Room/Chiller-01
+    kind: discrete
+    address: 0
+    type: bool
+
+  - name: alarm_active
+    description: Any active alarm
+    path: Plant-Room/Chiller-01
+    kind: discrete
+    address: 1
+    type: bool

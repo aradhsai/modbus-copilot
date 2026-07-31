@@ -1,0 +1,92 @@
+<script type="text/javascript">
+    RED.nodes.registerType('tag-ingest', {
+        category: 'industrial',
+        color: '#4d9e0c',
+        defaults: {
+            name: { value: '' },
+            profile: { value: 'profiles/example-pump.yaml', required: true },
+            device: { value: '' },
+            kind: { value: 'holding', required: true },
+            start: { value: 0, required: true, validate: RED.validators.number() },
+            count: { value: 0 }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: 'font-awesome/fa-tags',
+        label: function () { return this.name || `tags: ${this.kind} @${this.start}`; },
+        paletteLabel: 'tag ingest'
+    });
+</script>
+
+<script type="text/html" data-template-name="tag-ingest">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-profile"><i class="fa fa-file-o"></i> Profile</label>
+        <input type="text" id="node-input-profile" placeholder="profiles/example-pump.yaml">
+    </div>
+    <div class="form-row">
+        <label for="node-input-device"><i class="fa fa-microchip"></i> Device</label>
+        <input type="text" id="node-input-device" placeholder="defaults to the profile's device name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-kind"><i class="fa fa-list"></i> Kind</label>
+        <select id="node-input-kind">
+            <option value="holding">holding</option>
+            <option value="input">input</option>
+            <option value="coil">coil</option>
+            <option value="discrete">discrete</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-start"><i class="fa fa-hashtag"></i> Start</label>
+        <input type="number" id="node-input-start" placeholder="0">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="tag-ingest">
+    <p>Takes a block read from any protocol node and stores the tags that fall
+    inside it, decoded and scaled per the device profile.</p>
+    <p><b>Start</b> is the zero-based protocol address the upstream read began at,
+    so the node can work out which tag each value belongs to. A manual saying
+    40001 means holding register 0.</p>
+    <p>Read errors are stored as <code>quality: "bad"</code> rather than dropped —
+    a tag that silently reads zero is how a plant ends up trusting a dead point.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('tag-mcp', {
+        category: 'industrial',
+        color: '#2f6fb5',
+        defaults: {
+            name: { value: '' },
+            route: { value: '/mcp', required: true }
+        },
+        inputs: 0,
+        outputs: 0,
+        icon: 'font-awesome/fa-comments-o',
+        label: function () { return this.name || `MCP ${this.route}`; },
+        paletteLabel: 'tag MCP'
+    });
+</script>
+
+<script type="text/html" data-template-name="tag-mcp">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-route"><i class="fa fa-link"></i> Route</label>
+        <input type="text" id="node-input-route" placeholder="/mcp">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="tag-mcp">
+    <p>Serves the stored tags to an LLM over MCP (streamable HTTP), read-only.</p>
+    <p>There is <b>no write tool</b> — not disabled, absent. An LLM holding a
+    writable handle to a running plant is a bad idea, and the only way to be sure
+    a misconfiguration cannot enable one is for the code not to exist.</p>
+    <p>GET the same route in a browser to confirm the endpoint is alive.</p>
+</script>

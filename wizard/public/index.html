@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tag copilot — setup</title>
+<style>
+  :root{--ink:#121218;--body:#44454c;--muted:#61646b;--faint:#94979e;--line:#e0e2e6;--surface:#f7f7f8;--ok:#4d9e0c;--warn:#b4530a;--bad:#c0392b;--blue:#2f6fb5}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:40px 20px 80px}
+  h1{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 32px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:18px}
+  .step{font:11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+  input,textarea,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:14px/1.4 inherit;background:#fff;color:var(--ink)}
+  textarea{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;min-height:120px}
+  .row{display:flex;gap:12px}.row>*{flex:1}
+  button{margin-top:16px;padding:10px 18px;border:0;border-radius:8px;background:var(--ink);color:#fff;font:14px/1 inherit;font-weight:500;cursor:pointer}
+  button:disabled{opacity:.45;cursor:default}
+  button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .out{margin-top:16px;padding:14px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font:12.5px/1.6 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
+  .ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+  .g{border-left:3px solid var(--line);padding:10px 0 10px 14px;margin:14px 0}
+  .g.ok{border-color:var(--ok)}.g.warn{border-color:var(--warn)}.g.bad{border-color:var(--bad)}
+  .gname{font-weight:600}
+  .ghead{color:var(--muted);font-size:13.5px;margin-top:2px}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  td{padding:4px 8px 4px 0;border-bottom:1px solid var(--line);color:var(--body)}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .note{color:var(--warn);font-size:12.5px;padding:2px 0 6px 14px}
+  .hint{color:var(--faint);font-size:12.5px;margin-top:8px}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tag copilot</h1>
+  <p class="sub">Point at a device, load its tag database, check it is real, then hand it to an assistant.</p>
+
+  <div class="card">
+    <div class="step">1 — device</div>
+    <div class="row">
+      <div><label>Name</label><input id="name" value="Site-A" placeholder="Pump skid"></div>
+      <div><label>IP address</label><input id="host" value="127.0.0.1"></div>
+      <div><label>Port</label><input id="port" value="5020"></div>
+      <div><label>Unit ID</label><input id="unit" value="1"></div>
+    </div>
+    <button id="btnTest" class="ghost">Test connection</button>
+    <div id="testOut" class="out hide"></div>
+  </div>
+
+  <div class="card">
+    <div class="step">2 — tag database</div>
+    <label>Paste a CSV export, or choose a file</label>
+    <input type="file" id="file" accept=".csv,text/csv" style="border:0;padding:0;margin-bottom:8px">
+    <textarea id="csv" placeholder="Area,Equipment,Tag,Address,Type,Scale,Units,Description&#10;Station-1,Pump-01,suction_pressure,40001,UINT16,0.1,bar,Pump suction"></textarea>
+    <div class="hint">Column names are matched loosely. 40001 becomes holding register 0, 30006 becomes input 5.</div>
+    <button id="btnImport">Import</button>
+    <div id="importOut" class="out hide"></div>
+  </div>
+
+  <div class="card">
+    <div class="step">3 — check it is real</div>
+    <p style="margin:0;color:var(--muted);font-size:14px">Reads every tag several times. Reports what answers, what never moves, and what does not exist — before anything downstream is built on the map.</p>
+    <div class="row" style="max-width:360px">
+      <div><label>Samples</label><input id="samples" value="6"></div>
+      <div><label>Interval (ms)</label><input id="interval" value="900"></div>
+    </div>
+    <button id="btnCheck" disabled>Run check</button>
+    <div id="checkOut" class="hide"></div>
+  </div>
+
+  <div class="card">
+    <div class="step">4 — connect an assistant</div>
+    <p style="margin:0 0 8px;color:var(--muted);font-size:14px">Adds <code>tag-copilot</code> to Claude Desktop's config. Your other MCP servers are kept, and the file is backed up first.</p>
+    <button id="btnClaude">Add to Claude Desktop</button>
+    <button id="btnCopy" class="ghost">Copy config instead</button>
+    <div id="claudeOut" class="out hide"></div>
+    <div class="out" id="mcp" style="margin-top:12px">{
+  "mcpServers": {
+    "tag-copilot": { "url": "http://127.0.0.1:1880/mcp" }
+  }
+}</div>
+    <div class="hint">Read-only by construction: the server exposes no write tool, so an assistant can reason about the plant but never change it.</div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const show = (el, html, cls) => { el.classList.remove('hide'); el.className = 'out ' + (cls||''); el.innerHTML = html; };
+let profileFile = null;
+
+$('file').onchange = (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { $('csv').value = r.result; };
+  r.readAsText(f);
+};
+
+$('btnTest').onclick = async () => {
+  show($('testOut'), 'connecting…');
+  const r = await fetch('/api/test-connection', {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ host:$('host').value, port:$('port').value, unitId:$('unit').value })
+  }).then(r=>r.json());
+  show($('testOut'), (r.ok ? '✓ ' : '✗ ') + r.detail, r.ok ? 'ok' : 'bad');
+};
+
+$('btnImport').onclick = async () => {
+  show($('importOut'), 'reading…');
+  const r = await fetch('/api/import', {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ csv: $('csv').value, device:{
+      name:$('name').value, host:$('host').value, port:$('port').value, unitId:$('unit').value }})
+  }).then(r=>r.json());
+
+  if (r.error) return show($('importOut'), '✗ ' + r.error, 'bad');
+  profileFile = r.file;
+  $('btnCheck').disabled = false;
+
+  let out = `${r.count} tags → ${r.file}\n`;
+  out += `columns understood: ${r.understood.join(', ')}\n`;
+  if (r.ignored.length) out += `columns ignored:    ${r.ignored.join(', ')}\n`;
+  out += '\n';
+  for (const [g,n] of Object.entries(r.groups)) out += `  ${g.padEnd(28)} ${n}\n`;
+  if (r.problems.length) out += `\n${r.problems.length} to check:\n` + r.problems.map(p=>'  - '+p).join('\n');
+  out += `\n\nword_order is a guess — the check in step 3 will show both readings for any 32-bit tag.`;
+  show($('importOut'), out, '');
+};
+
+$('btnClaude').onclick = async () => {
+  show($('claudeOut'), 'writing…');
+  const r = await fetch('/api/add-to-claude', {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ url: 'http://127.0.0.1:1880/mcp' })
+  }).then(r=>r.json());
+  if (r.error) return show($('claudeOut'), '✗ ' + r.error, 'bad');
+  let out = `✓ ${r.replaced ? 'updated' : 'added'} tag-copilot → ${r.url}\n${r.file}`;
+  if (r.others.length) out += `\nkept alongside: ${r.others.join(', ')}`;
+  if (r.backup) out += `\nbackup: ${r.backup.split('/').pop()}`;
+  out += `\n\nRestart Claude Desktop to pick it up.`;
+  show($('claudeOut'), out, 'ok');
+};
+
+$('btnCopy').onclick = async () => {
+  await navigator.clipboard.writeText($('mcp').textContent);
+  show($('claudeOut'), 'Config copied. Paste it into Claude Desktop’s config file.', '');
+};
+
+$('btnCheck').onclick = async () => {
+  const el = $('checkOut');
+  el.classList.remove('hide');
+  el.innerHTML = '<div class="out">reading…</div>';
+  const r = await fetch('/api/validate', {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ file: profileFile, samples:$('samples').value, interval:$('interval').value })
+  }).then(r=>r.json());
+
+  if (r.error) { el.innerHTML = `<div class="out bad">✗ ${r.error}</div>`; return; }
+
+  if (!r.connected) {
+    el.innerHTML = `<div class="out bad">✗ NOT COMMUNICATING — ${r.error}
+0 of ${r.tagCount} tags could be read.
+Check the device is powered and on this network, the port is open,
+and that no other master is holding the link.</div>`;
+    return;
+  }
+
+  const t = r.totals;
+  let html = `<div class="out">${t.live} live · ${t.static} static · ${t.zero} zero · ${t.unreachable} unreachable   (soaked ${r.windowSec.toFixed(0)}s)</div>`;
+
+  for (const g of r.groups) {
+    const cls = g.verdict === 'ok' ? 'ok' : g.verdict === 'not_responding' ? 'bad' : 'warn';
+    html += `<div class="g ${cls}"><div class="gname">${g.name}</div><div class="ghead">${g.headline}</div>`;
+    const interesting = g.rows.filter(x => x.status !== 'live' || x.notes.length);
+    if (interesting.length) {
+      html += '<table>';
+      for (const row of interesting) {
+        const v = row.value === null || row.value === undefined ? '—'
+          : (typeof row.value === 'number' ? row.value.toFixed(2) : String(row.value));
+        html += `<tr><td>${row.tag}</td><td class="n">${v}</td><td>${row.unit}</td><td>${row.kind}@${row.address}</td><td class="${row.status==='unreachable'?'bad':row.status==='live'?'ok':'warn'}">${row.status}</td></tr>`;
+        for (const n of row.notes) html += `<tr><td colspan="5" class="note">↳ ${n.code}: ${n.text}</td></tr>`;
+      }
+      html += '</table>';
+    }
+    html += '</div>';
+  }
+
+  if ((t.static + t.zero) > 0 && r.windowSec < 60) {
+    html += `<div class="hint">Soaked only ${r.windowSec.toFixed(0)}s. Setpoints and slow analogs legitimately do not move in that time — raise samples before concluding a point is dead.</div>`;
+  }
+  el.innerHTML = html;
+};
+</script>
+</body>
+</html>

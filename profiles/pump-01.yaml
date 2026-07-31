@@ -1,0 +1,82 @@
+profile_version: 1
+device:
+  name: Pump-01
+  model: Acme VFD 3000
+  description: Variable frequency drive on the raw water transfer pump
+  transport: tcp
+  host: pump
+  port: 5020
+  unit_id: 1
+  byte_order: big
+  word_order: big
+  timeout_seconds: 3
+tags:
+  - name: suction_pressure
+    description: Pump suction pressure
+    kind: holding
+    address: 0
+    type: uint16
+    scale: 0.1
+    offset: 0
+    unit: bar
+    access: r
+    path: Plant-Room/Pump-01
+  - name: discharge_pressure
+    description: Pump discharge pressure
+    kind: holding
+    address: 1
+    type: uint16
+    scale: 0.1
+    unit: bar
+    access: r
+    path: Plant-Room/Pump-01
+  - name: motor_current
+    description: Motor current, RMS
+    kind: holding
+    address: 2
+    type: uint16
+    scale: 0.01
+    unit: A
+    access: r
+    path: Plant-Room/Pump-01
+  - name: speed_setpoint
+    description: Commanded speed
+    kind: holding
+    address: 10
+    type: uint16
+    scale: 0.1
+    unit: Hz
+    access: rw
+    path: Plant-Room/Pump-01
+  - name: running_hours
+    description: Cumulative run time
+    kind: holding
+    address: 20
+    type: uint32
+    scale: 1
+    unit: h
+    access: r
+    path: Plant-Room/Pump-01
+  - name: bearing_temperature
+    description: Drive-end bearing temperature
+    kind: input
+    address: 5
+    type: int16
+    scale: 0.1
+    unit: degC
+    access: r
+    path: Plant-Room/Pump-01
+  - name: run_feedback
+    description: Pump running
+    kind: discrete
+    address: 0
+    type: bool
+    access: r
+    path: Plant-Room/Pump-01
+  - name: fault_active
+    description: Any active fault
+    kind: discrete
+    address: 1
+    type: bool
+    access: r
+    path: Plant-Room/Pump-01

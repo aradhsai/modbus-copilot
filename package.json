@@ -1,0 +1,37 @@
+{
+  "name": "modbus-copilot",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Ask a Modbus device questions by tag name. Node-RED acquires, a tag profile gives it meaning, an LLM reads it over MCP \u2014 read-only.",
+  "scripts": {
+    "sim": "node sim/modbus-slave.js",
+    "nodered": "node-red -s nodered/settings.js",
+    "wizard": "node wizard/server.js",
+    "validate": "node tools/validate.js",
+    "import": "node tools/import-csv.js",
+    "test:mcp": "node tests/mcp-e2e.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^4.22.2",
+    "js-yaml": "^5.2.2",
+    "modbus-serial": "^8.0.25",
+    "node-red": "^5.0.4",
+    "node-red-contrib-modbus": "^5.60.1",
+    "zod": "^3.25.76"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aradhsai/modbus-copilot"
+  },
+  "keywords": [
+    "modbus",
+    "mcp",
+    "node-red",
+    "scada",
+    "industrial",
+    "llm",
+    "commissioning"
+  ]
+}

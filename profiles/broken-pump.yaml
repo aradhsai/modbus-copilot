@@ -1,0 +1,70 @@
+# A deliberately wrong map of the same device, used to check that the validator
+# earns its keep. Each tag carries exactly one realistic mistake — the kind that
+# gets made at 6pm on a commissioning day, not an absurd one.
+#
+# Expected verdicts:
+#   suction_pressure     scale_suspect  (x0.1 forgotten, so bar reads 10x)
+#   discharge_pressure   ok             (correct — a validator that flags everything is useless)
+#   motor_current        read_error     (address off the end of the map)
+#   bearing_temperature  scale_suspect  (int16 read raw, so 45.9 C reads as 459)
+#   running_hours        word_order     (32-bit words the wrong way round)
+
+profile_version: 1
+
+device:
+  name: Broken-Pump
+  model: Acme VFD 3000
+  description: Same device, a plausible set of mapping mistakes
+  transport: tcp
+  host: 127.0.0.1
+  port: 5020
+  unit_id: 1
+  byte_order: big
+  word_order: little        # wrong: the device is big-endian on words
+  timeout_seconds: 3
+
+tags:
+  - name: suction_pressure
+    description: Pump suction pressure
+    kind: holding
+    address: 0
+    type: uint16
+    scale: 1.0              # wrong: should be 0.1
+    unit: bar
+    access: r
+
+  - name: discharge_pressure
+    description: Pump discharge pressure
+    kind: holding
+    address: 1
+    type: uint16
+    scale: 0.1              # correct
+    unit: bar
+    access: r
+
+  - name: motor_current
+    description: Motor current
+    kind: holding
+    address: 900            # wrong: nothing lives there
+    type: uint16
+    scale: 0.01
+    unit: A
+    access: r
+
+  - name: bearing_temperature
+    description: Drive-end bearing temperature
+    kind: input
+    address: 5
+    type: int16
+    scale: 1.0              # wrong: should be 0.1
+    unit: degC
+    access: r
+
+  - name: running_hours
+    description: Cumulative run time
+    kind: holding
+    address: 20
+    type: uint32
+    scale: 1
+    unit: h
+    access: r
