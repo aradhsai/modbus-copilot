@@ -63,3 +63,58 @@ segmentation into zones and conduits, read-only / one-way paths for anything tha
 doesn't need to write, and monitoring that would flag an FC06 to a setpoint register
 from a host that has no business issuing one. See
 [Modbus isn't insecure. Your network is](https://aradhs.com/blog/modbus-isnt-insecure).
+
+---
+
+# The rest of the series
+
+The full "man on the wire" series, each part a real capture on the same isolated lab.
+Same rule everywhere: own equipment only.
+
+| Part | Article | Protocol | Money shot (real capture) |
+|---|---|---|---|
+| 1 | [A stranger moved my pump](https://aradhs.com/lab/stranger-pump) | Modbus TCP | FC06 write reg 10 = `0x0096` (15.0 Hz), no auth |
+| 2 | [Two vendors, one open wire](https://aradhs.com/lab/two-vendors) | EtherNet/IP + S7comm | CIP write `SETPOINT=0x1770`; S7 Write Var `DB1.DBW0=0x05dc` |
+| 3 | [The broker trusted everyone](https://aradhs.com/lab/broker-trust) | MQTT / Sparkplug | `allow_anonymous`; unauth host published `valve/command=0` |
+| 4 | [The door that could say no](https://aradhs.com/lab/opcua-capstone) | OPC UA | 42.0 on the wire once — NoSecurity yes, Sign&Encrypt no |
+
+## Part 2 — EtherNet/IP + S7comm (sims)
+
+```bash
+# EtherNet/IP (cpppo) — a CIP tag server, and a client that writes a tag:
+python -m cpppo.server.enip --address 0.0.0.0:44818 MOTOR_CMD=INT SETPOINT=INT LEVEL=INT
+python -m cpppo.server.enip.client --address <plc>:44818 SETPOINT=6000 SETPOINT
+
+# S7comm (python-snap7) — s7-server.py serves DB1; s7-write.py writes DB1.DBW0:
+python s7-server.py            # binds tcp/102, DB1 seeded
+python s7-write.py             # writes 1500 (15.0 Hz), reads back, restores
+```
+
+Decode: `tshark -r enip.pcap -Y cip` · `tshark -r s7.pcap -Y s7comm` (both auto-dissect).
+
+## Part 3 — MQTT / Sparkplug
+
+Sniff `tcp/1883` on the broker bridge; every CONNECT shows no username/password. One
+anonymous publish moves a control topic:
+
+```bash
+mosquitto_pub -h <broker> -t northwind/rotterdam/T101/valve/command -m 0   # no -u/-P
+```
+
+Decode: `tshark -r mqtt.pcap -Y 'mqtt.msgtype==1' -e mqtt.conflag.uname -e mqtt.conflag.passwd`.
+
+## Part 4 — OPC UA (capstone)
+
+`opcua-server.py` offers **both** NoSecurity and Sign&Encrypt on tcp/4840;
+`opcua-read.py` reads `Pump.Speed` through each door. The value 42.0 crosses the wire
+in the clear exactly once — the NoSecurity read.
+
+```bash
+python opcua-server.py         # NoSecurity + Basic256Sha256 Sign&Encrypt
+python opcua-read.py           # reads through both doors
+# proof: the IEEE-754 double for 42.0 appears once in the whole capture
+tshark -r opcua.pcap -T fields -e tcp.payload | tr -d '\n' | grep -oc 0000000000004540
+```
+
+> Kepware (the aggregator Part 4 frames) is Windows-only, so an open OPC UA server
+> stood in for it. The role — plaintext south, Sign&Encrypt north — is the point.
